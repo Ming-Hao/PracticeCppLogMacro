@@ -92,3 +92,9 @@ This is useful for customizing the log format or aligning with existing logging 
 
 - This is a small experiment and not meant for production use.
 - Mainly written for learning purposes — feel free to modify as needed.
+
+## Planned Features / TODO
+
+- [ ] Add `LOG_DEBUG` level and support log level filtering
+- [ ] Include timestamp in each log line
+- [ ] Show current thread ID in structured logs
