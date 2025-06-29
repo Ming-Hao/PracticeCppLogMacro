@@ -97,6 +97,9 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
             levelConstChar = ErrorPrefixCache;
             labelLen = ErrorLen;
             break;
+        case LogLevel::Unknown:
+        default:
+            break;
     }
     oss_ << "[" << levelConstChar << "]";
     for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
