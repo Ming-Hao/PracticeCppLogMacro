@@ -17,3 +17,4 @@ jobs:
 
       - name: Run build.bat
         run: build.bat
+        shell: cmd
