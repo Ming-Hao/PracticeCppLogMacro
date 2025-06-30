@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
+#include <thread>
 
 #ifndef LOG_PREFIX_TRACE
 #define LOG_PREFIX_TRACE TRACE
@@ -159,18 +160,24 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
     for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
         oss_ << ' ';
     }
+#ifdef LOGUTIL_INCLUDE_THREAD_ID
+    oss_ << "[" << "ThreadId" << " : " << std::this_thread::get_id() << "]";
+    oss_ << " ";
+#endif
+
 #ifdef LOGUTIL_INCLUDE_FILE
     #ifdef LOGUTIL_SHORTEN_PATH
-        oss_ << " " << shorten_file_path_with_ellipsis(file, LOGUTIL_PATH_DEPTH) << " : ";
+        oss_ << shorten_file_path_with_ellipsis(file, LOGUTIL_PATH_DEPTH) << " : ";
     #else
-        oss_ << " " << file << " : ";
+        oss_ << file << " : ";
     #endif
     #ifdef LOGUTIL_INCLUDE_LINE
         oss_ << line;
+        oss_ << " ";
     #endif
 #endif
 #ifdef LOGUTIL_INCLUDE_FUNC
-    oss_ << " in " << func;
+    oss_ << "in " << func;
 #endif
     oss_ << " - ";
 }
