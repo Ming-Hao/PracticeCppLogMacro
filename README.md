@@ -9,6 +9,8 @@ It's meant to replace the usual `std::cout << ...` calls with something like:
 LOG_INFO  << "some message";
 LOG_WARN  << "warn message";
 LOG_ERROR << "error message";
+LOG_DEBUG << "debug details";
+LOG_TRACE << "step-by-step trace";
 ```
 
 And the output will automatically include useful context like `__FILE__`, `__LINE__`, and the function signature (depending on compiler, e.g. `__PRETTY_FUNCTION__` or `__FUNCSIG__`).
@@ -50,25 +52,38 @@ This utility supports a few options that can be configured via `-D` flags when r
 | `LOGUTIL_SHORTEN_PATH`   | `ON`    | Shortens file path with `...`              |
 | `LOGUTIL_PATH_DEPTH`     | `5`     | Number of path segments to keep when shortening |
 
+### Log Filtering
+
+| Option                    | Default | Controls log visibility for...             |
+|--------------------------|---------|--------------------------------------------|
+| `LOGUTIL_VERBOSE_LEVEL`  | `2`     | Verbosity level: `0=trace`, `1=debug`, `2=info` |
+| `LOGUTIL_ENABLE_WARN`    | `ON`    | Enables output for `LOG_WARN`              |
+| `LOGUTIL_ENABLE_ERROR`   | `ON`    | Enables output for `LOG_ERROR`             |
+
+Levels outside the allowed range are completely excluded at compile-time.
+
 ### Example:
 
 ```bash
 cmake -S . -B build \
-  -DLOGUTIL_USE_STRUCTURED_LOGGING=ON \
-  -DLOGUTIL_INCLUDE_FUNC=ON \
-  -DLOGUTIL_SHORTEN_PATH=ON \
-  -DLOGUTIL_PATH_DEPTH=3
+  -DLOGUTIL_VERBOSE_LEVEL=1 \
+  -DLOGUTIL_ENABLE_WARN=ON \
+  -DLOGUTIL_ENABLE_ERROR=ON
 ```
+
+This enables `DEBUG`, `INFO`, `WARN`, and `ERROR`, but excludes `TRACE`.
 
 ---
 
-## 🔧 Customizing Log Level Prefixes
+## Customizing Log Level Prefixes
 
-By default, log levels are shown as `[INFO]`, `[WARN]`, and `[ERROR]`.  
+By default, log levels are shown as `[TRACE]`, `[DEBUG]`, `[INFO]`, `[WARN]`, and `[ERROR]`.  
 You can override the labels by defining the following macros when linking `logutil`:
 
 ```cmake
 target_compile_definitions(myapp PRIVATE
+    LOG_PREFIX_TRACE=T
+    LOG_PREFIX_DEBUG=D
     LOG_PREFIX_INFO=I
     LOG_PREFIX_WARN=W
     LOG_PREFIX_ERROR=E
@@ -95,6 +110,5 @@ This is useful for customizing the log format or aligning with existing logging 
 
 ## Planned Features / TODO
 
-- [ ] Add `LOG_DEBUG` level and support log level filtering
 - [ ] Include timestamp in each log line
 - [ ] Show current thread ID in structured logs

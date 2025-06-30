@@ -17,7 +17,10 @@ rem Step 3: Run cmake to configure in Release mode
 cmake -S %SCRIPT_DIR% -B %SCRIPT_DIR%build ^
     -DLOGUTIL_USE_STRUCTURED_LOGGING=ON ^
     -DLOGUTIL_SHORTEN_PATH=OFF ^
-    -DLOGUTIL_PATH_DEPTH=3
+    -DLOGUTIL_PATH_DEPTH=3 ^
+    -DLOGUTIL_VERBOSE_LEVEL=1 ^
+    -DLOGUTIL_ENABLE_WARN=ON ^
+    -DLOGUTIL_ENABLE_ERROR=OFF
 
 cmake --build "%SCRIPT_DIR%build" --config Release -- /m
 

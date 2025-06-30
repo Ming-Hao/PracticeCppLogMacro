@@ -1,5 +1,5 @@
 #include "foo.hpp"
 #include "logutil.hpp"
 void foo() {
-    LOG_INFO << "foo: doing something";
+    LOG_DEBUG << "foo: doing something";
 }

@@ -4,6 +4,14 @@
 #include <algorithm>
 #include <sstream>
 
+#ifndef LOG_PREFIX_TRACE
+#define LOG_PREFIX_TRACE TRACE
+#endif
+
+#ifndef LOG_PREFIX_DEBUG
+#define LOG_PREFIX_DEBUG DEBUG
+#endif
+
 #ifndef LOG_PREFIX_INFO
 #define LOG_PREFIX_INFO INFO
 #endif
@@ -57,7 +65,9 @@ inline static std::string shorten_file_path_with_ellipsis(const char* fullPath, 
 
 inline static int getMaxLabelWidth() {
     static const int width = [] {
-        const char* labels[] = { EXPAND_AND_STRINGIFY(LOG_PREFIX_INFO),
+        const char* labels[] = { EXPAND_AND_STRINGIFY(LOG_PREFIX_TRACE),
+                                 EXPAND_AND_STRINGIFY(LOG_PREFIX_DEBUG),
+                                 EXPAND_AND_STRINGIFY(LOG_PREFIX_INFO),
                                  EXPAND_AND_STRINGIFY(LOG_PREFIX_WARN),
                                  EXPAND_AND_STRINGIFY(LOG_PREFIX_ERROR) };
         int maxLen = 0;
@@ -68,40 +78,84 @@ inline static int getMaxLabelWidth() {
     return width;
 }
 
+
 namespace logutil {
+
+struct LogLevelInfo {
+    const char* label;
+    size_t      labelLen;
+    LogLevel    level;
+};
+
+static const LogLevelInfo kLogLevelTable[] = {
+    {EXPAND_AND_STRINGIFY(LOG_PREFIX_TRACE), std::strlen(EXPAND_AND_STRINGIFY(LOG_PREFIX_TRACE)), LogLevel::Trace},
+    {EXPAND_AND_STRINGIFY(LOG_PREFIX_DEBUG), std::strlen(EXPAND_AND_STRINGIFY(LOG_PREFIX_DEBUG)), LogLevel::Debug},
+    {EXPAND_AND_STRINGIFY(LOG_PREFIX_INFO),  std::strlen(EXPAND_AND_STRINGIFY(LOG_PREFIX_INFO)),  LogLevel::Info},
+    {EXPAND_AND_STRINGIFY(LOG_PREFIX_WARN),  std::strlen(EXPAND_AND_STRINGIFY(LOG_PREFIX_WARN)),  LogLevel::Warn},
+    {EXPAND_AND_STRINGIFY(LOG_PREFIX_ERROR), std::strlen(EXPAND_AND_STRINGIFY(LOG_PREFIX_ERROR)), LogLevel::Error},
+    // extend this table as needed
+};
+
+static const LogLevelInfo* findLogLevelInfo(LogLevel level) {
+    for (const auto& entry : kLogLevelTable) {
+        if (entry.level == level) return &entry;
+    }
+    return nullptr;
+}
 
 logstream::logstream(const char* file, int line, const char* func, LogLevel level)
 {
-    static const char* InfoPrefixCache  = EXPAND_AND_STRINGIFY(LOG_PREFIX_INFO);
-    static const char* WarnPrefixCache  = EXPAND_AND_STRINGIFY(LOG_PREFIX_WARN);
-    static const char* ErrorPrefixCache = EXPAND_AND_STRINGIFY(LOG_PREFIX_ERROR);
-    
-    static const int InfoLen  = static_cast<int>(std::strlen(InfoPrefixCache));
-    static const int WarnLen  = static_cast<int>(std::strlen(WarnPrefixCache));
-    static const int ErrorLen = static_cast<int>(std::strlen(ErrorPrefixCache));
-    
+#ifndef LOGUTIL_LOG_LEVELS_TRACE
+    if (level == LogLevel::Trace) {
+        stream_ = nullptr;
+        return;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_DEBUG
+    if (level == LogLevel::Debug) {
+        stream_ = nullptr;
+        return;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_INFO
+    if (level == LogLevel::Info) {
+        stream_ = nullptr;
+        return;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_WARN
+    if (level == LogLevel::Warn) {
+        stream_ = nullptr;
+        return;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_ERROR
+    if (level == LogLevel::Error) {
+        stream_ = nullptr;
+        return;
+    }
+#endif
+
+    stream_ = &std::cout;
+    if (level == LogLevel::Warn || level == LogLevel::Error) {
+        stream_ = &std::cerr;
+    }
+    const LogLevelInfo* info = findLogLevelInfo(level);
     int maxLabelWidth = getMaxLabelWidth();
 
-    const char* levelConstChar = "?";
-    int labelLen = 0;
-    switch (level) {
-        case LogLevel::Info:
-            levelConstChar = InfoPrefixCache;
-            labelLen = InfoLen;
-            break;
-        case LogLevel::Warn:
-            levelConstChar = WarnPrefixCache;
-            labelLen = WarnLen;
-            break;
-        case LogLevel::Error:
-            levelConstChar = ErrorPrefixCache;
-            labelLen = ErrorLen;
-            break;
-        case LogLevel::Unknown:
-        default:
-            break;
+    const char* label = "?";
+    size_t labelLen = 1;
+
+    if (info != nullptr) {
+        label = info->label;
+        labelLen = info->labelLen;
     }
-    oss_ << "[" << levelConstChar << "]";
+
+    oss_ << "[" << label << "]";
     for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
         oss_ << ' ';
     }
@@ -122,8 +176,11 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
 }
 
 logstream::~logstream() {
+    if (stream_ == nullptr) {
+        return;
+    }
     std::lock_guard<std::mutex> lock(cout_mutex);
-    std::cout << oss_.str() << std::endl;
+    *stream_ << oss_.str() << std::endl;
 }
 
 } // namespace logutil

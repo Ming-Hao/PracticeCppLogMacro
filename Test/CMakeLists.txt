@@ -18,6 +18,8 @@ target_link_libraries(myapp logutil)
 # Customize log level prefixes
 if(0)
 target_compile_definitions(logutil PRIVATE    
+    LOG_PREFIX_TRACE=T
+    LOG_PREFIX_DEBUG=D
     LOG_PREFIX_INFO=I
     LOG_PREFIX_WARN=W
     LOG_PREFIX_ERROR=E
