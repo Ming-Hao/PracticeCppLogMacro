@@ -31,4 +31,5 @@ jobs:
             call Test\build.bat
           else
             ./Test/build.sh
+          fi
         shell: bash
