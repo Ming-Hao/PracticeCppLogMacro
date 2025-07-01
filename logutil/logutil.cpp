@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <sstream>
 #include <thread>
+#include <chrono>
 
 #ifndef LOG_PREFIX_TRACE
 #define LOG_PREFIX_TRACE TRACE
