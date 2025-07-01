@@ -10,6 +10,8 @@ add_executable(myapp
     main.cpp
     foo.hpp
     foo.cpp
+    ThreadCheck/thread_check.hpp
+    ThreadCheck/thread_check.cpp
     TmpFolder/bar.hpp
     TmpFolder/bar.cpp)
     

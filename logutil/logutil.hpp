@@ -27,18 +27,18 @@ private:
 
 class logstream {
 public:
-    logstream(const char*, int, const char*, LogLevel) {
+    logstream(const char*, int, const char*, LogLevel level) {
         stream_ = &std::cout;
         if (level == LogLevel::Warn || level == LogLevel::Error) {
             stream_ = &std::cerr;
         }
     }
     ~logstream() {
-        *oss_ << std::endl;
+        *stream_ << std::endl;
     }
     template <typename T>
     logstream& operator<<(const T& value) {
-        *oss_ << value;
+        *stream_ << value;
         return *this;
     }
 

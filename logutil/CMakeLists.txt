@@ -16,13 +16,15 @@ option(LOGUTIL_USE_STRUCTURED_LOGGING "Enable structured logging with file, line
 option(LOGUTIL_INCLUDE_FILE "Include file information in log format" ON)
 option(LOGUTIL_INCLUDE_LINE "Include line information in log format" ON)
 option(LOGUTIL_INCLUDE_FUNC "Include function information in log format" ON)
+option(LOGUTIL_INCLUDE_THREAD_ID "Include current thread ID in log format" ON)
+
 option(LOGUTIL_SHORTEN_PATH "Enable file path shortening with ellipsis" ON)
 option(LOGUTIL_PATH_DEPTH "Number of directory levels to keep in file path" 5)
 
 set(LOGUTIL_VERBOSE_LEVEL 2 CACHE STRING "Verbosity level: 0=trace, 1=debug, 2=info")
 
 option(LOGUTIL_ENABLE_WARN "Enable WARN logs" ON)
-option(LOGUTIL_ENABLE_ERROR "Enable ERROR logs" ON )
+option(LOGUTIL_ENABLE_ERROR "Enable ERROR logs" ON)
 
 # Define USE_STRUCTURED_LOGGING if requested
 if (LOGUTIL_USE_STRUCTURED_LOGGING)
@@ -38,6 +40,9 @@ if (LOGUTIL_INCLUDE_LINE)
 endif()
 if (LOGUTIL_INCLUDE_FUNC)
     target_compile_definitions(logutil PUBLIC LOGUTIL_INCLUDE_FUNC)
+endif()
+if (LOGUTIL_INCLUDE_THREAD_ID)
+    target_compile_definitions(logutil PUBLIC LOGUTIL_INCLUDE_THREAD_ID)
 endif()
 
 if (LOGUTIL_SHORTEN_PATH)

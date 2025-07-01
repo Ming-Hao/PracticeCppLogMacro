@@ -43,14 +43,15 @@ void foo() {
 
 This utility supports a few options that can be configured via `-D` flags when running `cmake`:
 
-| Option                    | Default | Description                                |
-|--------------------------|---------|--------------------------------------------|
-| `LOGUTIL_USE_STRUCTURED_LOGGING` | `ON`    | Enables structured log output              |
-| `LOGUTIL_INCLUDE_FILE`   | `ON`    | Includes file path                         |
-| `LOGUTIL_INCLUDE_LINE`   | `ON`    | Includes line number                       |
-| `LOGUTIL_INCLUDE_FUNC`   | `ON`    | Includes function signature                |
-| `LOGUTIL_SHORTEN_PATH`   | `ON`    | Shortens file path with `...`              |
-| `LOGUTIL_PATH_DEPTH`     | `5`     | Number of path segments to keep when shortening |
+| Option                         | Default | Description                                        |
+|-------------------------------|---------|----------------------------------------------------|
+| `LOGUTIL_USE_STRUCTURED_LOGGING` | `ON`    | Enables structured log output                      |
+| `LOGUTIL_INCLUDE_FILE`        | `ON`    | Includes file path                                 |
+| `LOGUTIL_INCLUDE_LINE`        | `ON`    | Includes line number                               |
+| `LOGUTIL_INCLUDE_FUNC`        | `ON`    | Includes function signature                        |
+| `LOGUTIL_INCLUDE_THREAD_ID`   | `OFF`   | Includes current thread ID in log output           |
+| `LOGUTIL_SHORTEN_PATH`        | `ON`    | Shortens file path with `...`                      |
+| `LOGUTIL_PATH_DEPTH`          | `5`     | Number of path segments to keep when shortening    |
 
 ### Log Filtering
 
@@ -111,4 +112,3 @@ This is useful for customizing the log format or aligning with existing logging 
 ## Planned Features / TODO
 
 - [ ] Include timestamp in each log line
-- [ ] Show current thread ID in structured logs

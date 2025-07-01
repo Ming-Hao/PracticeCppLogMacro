@@ -20,7 +20,8 @@ cmake -S %SCRIPT_DIR% -B %SCRIPT_DIR%build ^
     -DLOGUTIL_PATH_DEPTH=3 ^
     -DLOGUTIL_VERBOSE_LEVEL=1 ^
     -DLOGUTIL_ENABLE_WARN=ON ^
-    -DLOGUTIL_ENABLE_ERROR=OFF
+    -DLOGUTIL_ENABLE_ERROR=OFF ^
+    -DLOGUTIL_INCLUDE_THREAD_ID=OFF
 
 if errorlevel 1 (
     echo CMake configuration failed.
