@@ -37,6 +37,7 @@
 
 #include <mutex>
 static std::mutex cout_mutex;
+static std::mutex cerr_mutex;
 
 inline static std::string shorten_file_path_with_ellipsis(const char* fullPath, int depth = 2) {
     std::string path(fullPath);
@@ -105,6 +106,39 @@ static const LogLevelInfo* findLogLevelInfo(LogLevel level) {
     return nullptr;
 }
 
+inline bool isLogLevelDisabled(LogLevel level) {
+#ifndef LOGUTIL_LOG_LEVELS_TRACE
+    if (level == LogLevel::Trace) {
+        return true;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_DEBUG
+    if (level == LogLevel::Debug) {
+        return true;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_INFO
+    if (level == LogLevel::Info) {
+        return true;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_WARN
+    if (level == LogLevel::Warn) {
+        return true;
+    }
+#endif
+
+#ifndef LOGUTIL_LOG_LEVELS_ERROR
+    if (level == LogLevel::Error) {
+        return true;
+    }
+#endif
+    return false;
+}
+
 static void getTimestamp(std::ostream& os) {
     auto now = std::chrono::system_clock::now();
     auto now_time = std::chrono::system_clock::to_time_t(now);
@@ -117,42 +151,44 @@ static void getTimestamp(std::ostream& os) {
     os << "[" << timestamp << "." << std::setw(3) << std::setfill('0') << ms.count() << "]";
 }
 
+inline static void appendTimestampIfEnabled(std::ostream& os) {
+#ifdef LOGUTIL_INCLUDE_TIMESTAMP
+    getTimestamp(os);
+    os << " ";
+#endif
+}
+
+inline static void appendThreadIdIfEnabled(std::ostream& os) {
+#ifdef LOGUTIL_INCLUDE_THREAD_ID
+    os << "[ThreadId : " << std::this_thread::get_id() << "] ";
+#endif
+}
+
+inline static void appendFileLineIfEnabled(std::ostream& os, const char* file, int line) {
+#ifdef LOGUTIL_INCLUDE_FILE
+    #ifdef LOGUTIL_SHORTEN_PATH
+        os << shorten_file_path_with_ellipsis(file, LOGUTIL_PATH_DEPTH) << " : ";
+    #else
+        os << file << " : ";
+    #endif
+    #ifdef LOGUTIL_INCLUDE_LINE
+        os << line << " ";
+    #endif
+#endif
+}
+
+inline static void appendFunctionIfEnabled(std::ostream& os, const char* func) {
+#ifdef LOGUTIL_INCLUDE_FUNC
+    os << "in " << func;
+#endif
+}
+
 logstream::logstream(const char* file, int line, const char* func, LogLevel level)
 {
-#ifndef LOGUTIL_LOG_LEVELS_TRACE
-    if (level == LogLevel::Trace) {
+    if (isLogLevelDisabled(level)) {
         stream_ = nullptr;
         return;
     }
-#endif
-
-#ifndef LOGUTIL_LOG_LEVELS_DEBUG
-    if (level == LogLevel::Debug) {
-        stream_ = nullptr;
-        return;
-    }
-#endif
-
-#ifndef LOGUTIL_LOG_LEVELS_INFO
-    if (level == LogLevel::Info) {
-        stream_ = nullptr;
-        return;
-    }
-#endif
-
-#ifndef LOGUTIL_LOG_LEVELS_WARN
-    if (level == LogLevel::Warn) {
-        stream_ = nullptr;
-        return;
-    }
-#endif
-
-#ifndef LOGUTIL_LOG_LEVELS_ERROR
-    if (level == LogLevel::Error) {
-        stream_ = nullptr;
-        return;
-    }
-#endif
 
     stream_ = &std::cout;
     if (level == LogLevel::Warn || level == LogLevel::Error) {
@@ -174,30 +210,12 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
     for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
         oss_ << ' ';
     }
-#ifdef LOGUTIL_INCLUDE_TIMESTAMP
-    getTimestamp(oss_);
-    oss_ << " ";
-#endif
 
-#ifdef LOGUTIL_INCLUDE_THREAD_ID
-    oss_ << "[" << "ThreadId" << " : " << std::this_thread::get_id() << "]";
-    oss_ << " ";
-#endif
-
-#ifdef LOGUTIL_INCLUDE_FILE
-    #ifdef LOGUTIL_SHORTEN_PATH
-        oss_ << shorten_file_path_with_ellipsis(file, LOGUTIL_PATH_DEPTH) << " : ";
-    #else
-        oss_ << file << " : ";
-    #endif
-    #ifdef LOGUTIL_INCLUDE_LINE
-        oss_ << line;
-        oss_ << " ";
-    #endif
-#endif
-#ifdef LOGUTIL_INCLUDE_FUNC
-    oss_ << "in " << func;
-#endif
+    appendTimestampIfEnabled(oss_);
+    appendThreadIdIfEnabled(oss_);
+    appendFileLineIfEnabled(oss_, file, line);
+    appendFunctionIfEnabled(oss_, func);
+    
     oss_ << " - ";
 }
 
@@ -205,8 +223,14 @@ logstream::~logstream() {
     if (stream_ == nullptr) {
         return;
     }
-    std::lock_guard<std::mutex> lock(cout_mutex);
-    *stream_ << oss_.str() << std::endl;
+    if (stream_ == &std::cerr) {
+        std::lock_guard<std::mutex> lock(cerr_mutex);
+        *stream_ << oss_.str() << std::endl;
+    }
+    else if (stream_ == &std::cout) {
+        std::lock_guard<std::mutex> lock(cout_mutex);
+        *stream_ << oss_.str() << std::endl;
+    }
 }
 
 } // namespace logutil
