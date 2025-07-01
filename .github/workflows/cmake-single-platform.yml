@@ -1,4 +1,4 @@
-name: Build LogUtil on Windows
+name: Build LogUtil (Win + Mac)
 
 on:
   push:
@@ -9,12 +9,26 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Run Test/build.bat
-        run: Test\build.bat
-        shell: cmd
+      # macOS 專用：給 build.sh 執行權限
+      - name: Make build.sh executable (macOS only)
+        if: runner.os == 'macOS'
+        run: chmod +x Test/build.sh
+
+      # 執行對應平台的建構指令
+      - name: Run build script
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            call Test\build.bat
+          else
+            ./Test/build.sh
+        shell: bash
