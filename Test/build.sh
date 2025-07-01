@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Get the directory path of the script
 SCRIPT_DIR=$(dirname "$0")
 
@@ -13,6 +15,7 @@ fi
 mkdir "$SCRIPT_DIR/build"
 
 # Step 3: Run cmake to configure in Release mode
+echo "[Step] Configuring CMake..."
 cmake -S "$SCRIPT_DIR" -B "$SCRIPT_DIR/build" \
     -DLOGUTIL_USE_STRUCTURED_LOGGING=ON \
     -DLOGUTIL_SHORTEN_PATH=OFF \
@@ -21,6 +24,7 @@ cmake -S "$SCRIPT_DIR" -B "$SCRIPT_DIR/build" \
     -DLOGUTIL_ENABLE_WARN=ON \
     -DLOGUTIL_ENABLE_ERROR=OFF
 
+echo "[Step] Building..."
 cmake --build "$SCRIPT_DIR/build" --config Release -- -j
 
 # Step 4: Run the executable
@@ -30,4 +34,5 @@ if [ -f "$SCRIPT_DIR/build/myapp" ]; then
     "$SCRIPT_DIR/build/myapp"
 else
     echo "myapp not found"
+    exit 1
 fi

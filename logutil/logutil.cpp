@@ -103,7 +103,7 @@ static const LogLevelInfo* findLogLevelInfo(LogLevel level) {
     return nullptr;
 }
 
-logstream::logstream(const char* file, int line, const char* func, LogLevel level)
+logstream::lgstream(const char* file, int line, const char* func, LogLevel level)
 {
 #ifndef LOGUTIL_LOG_LEVELS_TRACE
     if (level == LogLevel::Trace) {
