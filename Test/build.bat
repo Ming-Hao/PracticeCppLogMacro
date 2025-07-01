@@ -22,7 +22,17 @@ cmake -S %SCRIPT_DIR% -B %SCRIPT_DIR%build ^
     -DLOGUTIL_ENABLE_WARN=ON ^
     -DLOGUTIL_ENABLE_ERROR=OFF
 
+if errorlevel 1 (
+    echo CMake configuration failed.
+    exit /b 1
+)
+
 cmake --build "%SCRIPT_DIR%build" --config Release -- /m
+
+if errorlevel 1 (
+    echo Build failed.
+    exit /b 1
+)
 
 rem Step 4: Run the executable
 echo Path: "%SCRIPT_DIR%build\Release\myapp.exe"
@@ -31,6 +41,7 @@ if exist "%SCRIPT_DIR%build\Release\myapp.exe" (
     "%SCRIPT_DIR%build\Release\myapp.exe"
 ) else (
     echo myapp.exe not found
+    exit /b 1
 )
 
 endlocal
