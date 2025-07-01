@@ -23,7 +23,8 @@ cmake -S "$SCRIPT_DIR" -B "$SCRIPT_DIR/build" \
     -DLOGUTIL_VERBOSE_LEVEL=1 \
     -DLOGUTIL_ENABLE_WARN=ON \
     -DLOGUTIL_ENABLE_ERROR=OFF \
-    -DLOGUTIL_INCLUDE_THREAD_ID=OFF
+    -DLOGUTIL_INCLUDE_THREAD_ID=OFF \
+    -DLOGUTIL_INCLUDE_TIMESTAMP=OFF
 
 echo "[Step] Building..."
 cmake --build "$SCRIPT_DIR/build" --config Release -- -j

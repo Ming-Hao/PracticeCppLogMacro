@@ -104,6 +104,18 @@ static const LogLevelInfo* findLogLevelInfo(LogLevel level) {
     return nullptr;
 }
 
+static void getTimestamp(std::ostream& os) {
+    auto now = std::chrono::system_clock::now();
+    auto now_time = std::chrono::system_clock::to_time_t(now);
+    auto now_tm = *std::localtime(&now_time);
+    char timestamp[20];
+    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &now_tm);
+
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+    os << "[" << timestamp << "." << std::setw(3) << std::setfill('0') << ms.count() << "]";
+}
+
 logstream::logstream(const char* file, int line, const char* func, LogLevel level)
 {
 #ifndef LOGUTIL_LOG_LEVELS_TRACE
@@ -145,6 +157,7 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
     if (level == LogLevel::Warn || level == LogLevel::Error) {
         stream_ = &std::cerr;
     }
+
     const LogLevelInfo* info = findLogLevelInfo(level);
     int maxLabelWidth = getMaxLabelWidth();
 
@@ -160,6 +173,11 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
     for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
         oss_ << ' ';
     }
+#ifdef LOGUTIL_INCLUDE_TIMESTAMP
+    getTimestamp(oss_);
+    oss_ << " ";
+#endif
+
 #ifdef LOGUTIL_INCLUDE_THREAD_ID
     oss_ << "[" << "ThreadId" << " : " << std::this_thread::get_id() << "]";
     oss_ << " ";

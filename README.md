@@ -50,6 +50,7 @@ This utility supports a few options that can be configured via `-D` flags when r
 | `LOGUTIL_INCLUDE_LINE`        | `ON`    | Includes line number                               |
 | `LOGUTIL_INCLUDE_FUNC`        | `ON`    | Includes function signature                        |
 | `LOGUTIL_INCLUDE_THREAD_ID`   | `OFF`   | Includes current thread ID in log output           |
+| `LOGUTIL_INCLUDE_TIMESTAMP`   | `ON`    | Includes timestamp in log output                   |
 | `LOGUTIL_SHORTEN_PATH`        | `ON`    | Shortens file path with `...`                      |
 | `LOGUTIL_PATH_DEPTH`          | `5`     | Number of path segments to keep when shortening    |
 
@@ -108,7 +109,3 @@ This is useful for customizing the log format or aligning with existing logging 
 
 - This is a small experiment and not meant for production use.
 - Mainly written for learning purposes — feel free to modify as needed.
-
-## Planned Features / TODO
-
-- [ ] Include timestamp in each log line
