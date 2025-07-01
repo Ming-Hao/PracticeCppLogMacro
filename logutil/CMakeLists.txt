@@ -6,6 +6,8 @@ add_library(logutil STATIC
     logutil.cpp
 )
 
+target_compile_features(logutil PUBLIC cxx_std_11)
+
 # Expose current directory as public include path
 target_include_directories(logutil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
