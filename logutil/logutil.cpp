@@ -139,6 +139,7 @@ inline bool isLogLevelDisabled(LogLevel level) {
     return false;
 }
 
+#ifdef LOGUTIL_INCLUDE_TIMESTAMP
 static void getTimestamp(std::ostream& os) {
     auto now = std::chrono::system_clock::now();
     auto now_time = std::chrono::system_clock::to_time_t(now);
@@ -150,6 +151,7 @@ static void getTimestamp(std::ostream& os) {
 
     os << "[" << timestamp << "." << std::setw(3) << std::setfill('0') << ms.count() << "]";
 }
+#endif
 
 inline static void appendTimestampIfEnabled(std::ostream& os) {
 #ifdef LOGUTIL_INCLUDE_TIMESTAMP
@@ -183,6 +185,25 @@ inline static void appendFunctionIfEnabled(std::ostream& os, const char* func) {
 #endif
 }
 
+
+inline static void setupLogLabel(std::ostream& os, LogLevel level) {
+    const LogLevelInfo* info = findLogLevelInfo(level);
+    int maxLabelWidth = getMaxLabelWidth();
+
+    const char* label = "?";
+    size_t labelLen = 1;
+
+    if (info != nullptr) {
+        label = info->label;
+        labelLen = info->labelLen;
+    }
+
+    os << "[" << label << "]";
+    for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
+        os << ' ';
+    }
+}
+
 logstream::logstream(const char* file, int line, const char* func, LogLevel level)
 {
     if (isLogLevelDisabled(level)) {
@@ -195,22 +216,7 @@ logstream::logstream(const char* file, int line, const char* func, LogLevel leve
         stream_ = &std::cerr;
     }
 
-    const LogLevelInfo* info = findLogLevelInfo(level);
-    int maxLabelWidth = getMaxLabelWidth();
-
-    const char* label = "?";
-    size_t labelLen = 1;
-
-    if (info != nullptr) {
-        label = info->label;
-        labelLen = info->labelLen;
-    }
-
-    oss_ << "[" << label << "]";
-    for (int i = 0; i < maxLabelWidth - labelLen; ++i) {
-        oss_ << ' ';
-    }
-
+    setupLogLabel(oss_, level);
     appendTimestampIfEnabled(oss_);
     appendThreadIdIfEnabled(oss_);
     appendFileLineIfEnabled(oss_, file, line);
